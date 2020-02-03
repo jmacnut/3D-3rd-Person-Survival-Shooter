@@ -23,6 +23,9 @@ public class Player : MonoBehaviour
    Vector3 _direction = Vector3.zero;
    private Vector3 _velocity;
 
+   private Camera _mainCamera;
+
+
    void Start()
    {
       _characterController = GetComponent<CharacterController>();
@@ -31,11 +34,50 @@ public class Player : MonoBehaviour
       {
          Debug.LogError("The CharacterController is NULL");
       }
+
+      _mainCamera = Camera.main;
+
+      if (_mainCamera == null)
+      {
+         Debug.LogError("The Main Camera object is NULL.");
+      }
    }
 
    void Update()
    {
+      //CalculateMovement();
+      float mouseX = Input.GetAxis("Mouse X");
+      float mouseY = Input.GetAxis("Mouse Y");
 
+      // look left-right: apply mouseX to the player rotation y
+      // player rotation
+      //transform.rotation.y += mouseX;   // idea
+      //transform.localEulerAngles += new Vector3(   // long way
+         //transform.localEulerAngles.x,
+         //transform.localEulerAngles.y + mouseX,
+         //transform.localEulerAngles.z);
+
+      // short way
+      //Vector3 currentRotation = transform.localEulerAngles;
+      //currentRotation.y += mouseX;
+      //transform.localEulerAngles = currentRotation;
+
+      // using quaternions to prevent gimble lock
+      Vector3 currentRotation = transform.localEulerAngles;
+      currentRotation.y += mouseX;
+      transform.localRotation = Quaternion.AngleAxis(currentRotation.y, Vector3.up);
+
+      // look up-down: apply mouseY to the camera rotation X
+      // clamp between 0 and 15
+      Vector3 currentCameraRotation = _mainCamera.gameObject.transform.localEulerAngles;
+      currentCameraRotation.x -= mouseY;
+      _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
+      //_mainCamera.gameObject.transform.localEulerAngles = currentCameraRotation;
+   }
+
+
+   void CalculateMovement()
+   {
       if (_characterController.isGrounded == true)
       {
          // We are grounded, so recalculate
