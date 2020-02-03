@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
    // character controller handle
    private CharacterController _characterController;
 
+   [Header("Controller Settings")]
    [SerializeField]
    private float _speed = 6.0f;
    [SerializeField]
@@ -24,6 +25,9 @@ public class Player : MonoBehaviour
    private Vector3 _velocity;
 
    private Camera _mainCamera;
+   [Header("Camera Settings")]
+   [SerializeField]
+   private float _cameraSensitivity = 1.0f;   // allows player to adjust
 
 
    void Start()
@@ -45,34 +49,8 @@ public class Player : MonoBehaviour
 
    void Update()
    {
-      //CalculateMovement();
-      float mouseX = Input.GetAxis("Mouse X");
-      float mouseY = Input.GetAxis("Mouse Y");
-
-      // look left-right: apply mouseX to the player rotation y
-      // player rotation
-      //transform.rotation.y += mouseX;   // idea
-      //transform.localEulerAngles += new Vector3(   // long way
-         //transform.localEulerAngles.x,
-         //transform.localEulerAngles.y + mouseX,
-         //transform.localEulerAngles.z);
-
-      // short way
-      //Vector3 currentRotation = transform.localEulerAngles;
-      //currentRotation.y += mouseX;
-      //transform.localEulerAngles = currentRotation;
-
-      // using quaternions to prevent gimble lock
-      Vector3 currentRotation = transform.localEulerAngles;
-      currentRotation.y += mouseX;
-      transform.localRotation = Quaternion.AngleAxis(currentRotation.y, Vector3.up);
-
-      // look up-down: apply mouseY to the camera rotation X
-      // clamp between 0 and 15
-      Vector3 currentCameraRotation = _mainCamera.gameObject.transform.localEulerAngles;
-      currentCameraRotation.x -= mouseY;
-      _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
-      //_mainCamera.gameObject.transform.localEulerAngles = currentCameraRotation;
+      CalculateMovement();
+      CameraController();
    }
 
 
@@ -99,7 +77,44 @@ public class Player : MonoBehaviour
       // This is because gravity should be applied as an acceleration (ms^-2)
       _velocity.y -= _gravity * Time.deltaTime;
 
+      // convert from local space to world space (move in the direction facing)
+      _velocity = transform.TransformDirection(_velocity);
+
       // Move the controller
       _characterController.Move(_velocity * Time.deltaTime);
+   }
+
+   void CameraController()
+   {
+      float mouseX = Input.GetAxis("Mouse X");
+      float mouseY = Input.GetAxis("Mouse Y");
+
+      // look left-right: apply mouseX to the player rotation y
+      // player rotation (basic idea)
+      //transform.rotation.y += mouseX;
+
+      // long way with Euler Angles
+      //transform.localEulerAngles += new Vector3(
+      //transform.localEulerAngles.x,
+      //transform.localEulerAngles.y + mouseX,
+      //transform.localEulerAngles.z);
+
+      // short way with Euler Angles
+      //Vector3 currentRotation = transform.localEulerAngles;
+      //currentRotation.y += mouseX;
+      //transform.localEulerAngles = currentRotation;
+
+      // using quaternions to prevent gimble lock
+      Vector3 currentRotation = transform.localEulerAngles;
+      currentRotation.y += mouseX * _cameraSensitivity;
+      transform.localRotation = Quaternion.AngleAxis(currentRotation.y, Vector3.up);
+
+      // look up-down: apply mouseY to the camera rotation X
+      // clamp between 0 and 15
+      Vector3 currentCameraRotation = _mainCamera.gameObject.transform.localEulerAngles;
+      currentCameraRotation.x -= mouseY * _cameraSensitivity;
+      _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
+      //_mainCamera.gameObject.transform.localEulerAngles = currentCameraRotation;
+
    }
 }
