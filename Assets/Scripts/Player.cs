@@ -45,12 +45,23 @@ public class Player : MonoBehaviour
       {
          Debug.LogError("The Main Camera object is NULL.");
       }
+
+      // lock and hide cursor
+      Cursor.lockState = CursorLockMode.Locked;
+
    }
 
    void Update()
    {
       CalculateMovement();
       CameraController();
+
+      // unlock cursor withd ESC key
+      if (Input.GetKeyDown(KeyCode.Escape))
+      {
+         Cursor.lockState = CursorLockMode.None;
+      }
+
    }
 
 
@@ -113,8 +124,7 @@ public class Player : MonoBehaviour
       // clamp between 0 and 15
       Vector3 currentCameraRotation = _mainCamera.gameObject.transform.localEulerAngles;
       currentCameraRotation.x -= mouseY * _cameraSensitivity;
+      currentCameraRotation.x = Mathf.Clamp(currentCameraRotation.x, 0f, 26f);
       _mainCamera.gameObject.transform.localRotation = Quaternion.AngleAxis(currentCameraRotation.x, Vector3.right);
-      //_mainCamera.gameObject.transform.localEulerAngles = currentCameraRotation;
-
    }
 }
