@@ -30,7 +30,17 @@ public class Shoot : MonoBehaviour
          if (Physics.Raycast(rayOrigin, out hitInfo))
          {
             Debug.Log("Hit: " + hitInfo);
-
+            // get a reference to the object I hit - their health script
+            // call damage methond on their script
+            Health health = hitInfo.collider.GetComponent<Health>();
+            if (health != null)
+            {
+               health.Damage(50);
+            }
+            else
+            {
+               Debug.LogError("The health object is NULL.");
+            }
          }
       }
    }
